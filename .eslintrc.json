@@ -1,3 +1,18 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:tailwindcss/recommended"
+  ],
+  "plugins": [
+    "prettier",
+    "simple-import-sort",
+    "tailwindcss"
+  ],
+  "rules": {
+    "prettier/prettier": [
+      "error"
+    ],
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error"
+  }
 }
