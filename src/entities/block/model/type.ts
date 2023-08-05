@@ -1,7 +1,9 @@
+import { FunctionNode } from 'mathjs'
+
 type Block = {
   id: string
-  args: string[]
-  name: 'add' | 'concat'
+  functionNode: FunctionNode
+  type: 'add' | 'concat'
 }
 
 export type { Block }

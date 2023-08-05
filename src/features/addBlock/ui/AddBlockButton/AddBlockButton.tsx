@@ -1,14 +1,21 @@
 import { PlusIcon } from '@radix-ui/react-icons'
 
+import { Block, createBlock } from '@/entities/block'
 import { Button } from '@/shared/ui/Button'
 
+import { addBlock } from '../../model/addBlock'
+
 type Props = {
-  onAdd: () => void
+  blocksSetter: React.Dispatch<React.SetStateAction<Block[]>>
 }
 
-const AddBlockButton: React.FunctionComponent<Props> = ({ onAdd }) => {
+const AddBlockButton: React.FunctionComponent<Props> = ({ blocksSetter }) => {
+  const handleClick = () => {
+    blocksSetter(addBlock('add'))
+  }
+
   return (
-    <Button onClick={onAdd}>
+    <Button onClick={handleClick}>
       <PlusIcon />
     </Button>
   )

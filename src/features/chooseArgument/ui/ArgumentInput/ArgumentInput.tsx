@@ -1,4 +1,5 @@
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
+import { ConstantNode } from 'mathjs'
 import React from 'react'
 
 import { Block } from '@/entities/block'
@@ -15,16 +16,20 @@ import { Input } from '@/shared/ui/Input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/Popover'
 import { Separator } from '@/shared/ui/Separator'
 
+import { updateBlockArgument } from '../../model/updateBlockArgument'
+
 type Props = {
+  argumentIndex: number
   placeholder: string
   variables?: { value: string; label: string }[]
-  onChange: (value: Block['args'][number]) => void
+  blockSetter: React.Dispatch<React.SetStateAction<Block>>
 }
 
 const ArgumentInput: React.FunctionComponent<Props> = ({
+  argumentIndex,
   placeholder,
   variables = [],
-  onChange,
+  blockSetter,
 }) => {
   const formRef = React.useRef<HTMLFormElement>(null)
 
@@ -43,7 +48,9 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
     setDirectValue(newDirectValue)
     setSelectedVariable('')
 
-    onChange(newDirectValue)
+    blockSetter(
+      updateBlockArgument(argumentIndex, new ConstantNode(newDirectValue))
+    )
 
     setOpen(false)
   }
@@ -54,7 +61,15 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
       clickedVariable === selectedVariable ? '' : clickedVariable
     setSelectedVariable(newSelectedVariable)
 
-    onChange(newSelectedVariable)
+    blockSetter(
+      updateBlockArgument(
+        argumentIndex,
+        new ConstantNode(
+          variables.find((variable) => variable.value === selectedVariable)
+            ?.label ?? ''
+        )
+      )
+    )
 
     setOpen(false)
   }
@@ -63,7 +78,7 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
     setDirectValue('')
     setSelectedVariable('')
 
-    onChange('')
+    blockSetter(updateBlockArgument(argumentIndex, new ConstantNode('')))
 
     formRef?.current?.reset()
   }
@@ -75,12 +90,16 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[200px] min-w-0 justify-between"
         >
-          {selectedVariable
-            ? variables.find((variable) => variable.value === selectedVariable)
-                ?.label
-            : directValue || placeholder}
+          <span className="truncate">
+            {selectedVariable
+              ? variables.find(
+                  (variable) => variable.value === selectedVariable
+                )?.label
+              : directValue || placeholder}
+          </span>
+
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>

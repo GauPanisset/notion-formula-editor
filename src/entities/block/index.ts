@@ -1,2 +1,5 @@
 export { config as blockConfig } from './config'
+export { useBlocksContext } from './model/blocksContext'
+export { createBlock } from './model/createBlock'
 export type { Block } from './model/type'
+export { BlocksProvider } from './ui/BlocksProvider'

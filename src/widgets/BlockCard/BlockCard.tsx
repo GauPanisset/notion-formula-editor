@@ -1,9 +1,10 @@
 import { PlusIcon } from '@radix-ui/react-icons'
+import React from 'react'
 
-import { Block, blockConfig } from '@/entities/block'
+import { Block, blockConfig, useBlocksContext } from '@/entities/block'
 import { ArgumentInput } from '@/features/chooseArgument'
 import { RemoveBlockButton } from '@/features/removeBlock'
-import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/Alert'
 import {
   Card,
   CardContent,
@@ -13,37 +14,40 @@ import {
   CardTitle,
 } from '@/shared/ui/Card'
 
-type Props = Block & {
-  onRemove: (blockId: string) => void
-  onUpdateArgs: (newArgs: Block['args']) => void
-}
+type Props = Block
 
 const BlockCard: React.FunctionComponent<Props> = ({
   id,
-  name,
-  args,
-  onRemove,
-  onUpdateArgs,
+  type,
+  functionNode,
 }) => {
-  const config = blockConfig[name]
+  const config = blockConfig[type]
+  const { setBlocks } = useBlocksContext()
 
-  const handleRemove = () => {
-    onRemove(id)
-  }
+  const blockSetter: React.Dispatch<React.SetStateAction<Block>> =
+    React.useMemo(
+      () => (blockOrFunction) => {
+        setBlocks((previousBlocks) => {
+          const newBlocks = previousBlocks.map((block) => {
+            const newBlock =
+              typeof blockOrFunction === 'function'
+                ? blockOrFunction(block)
+                : blockOrFunction
 
-  const makeArgumentUpdateHandler =
-    (argIndex: number) => (newArgument: Block['args'][number]) => {
-      onUpdateArgs(
-        args.map((argument, index) =>
-          argIndex === index ? newArgument : argument
-        )
-      )
-    }
+            return block.id === id ? newBlock : block
+          })
+          return newBlocks
+        })
+      },
+      [id, setBlocks]
+    )
+
+  const output = functionNode?.compile()?.evaluate()
 
   return (
     <Card className="relative w-full">
       <div className="absolute right-3 top-3">
-        <RemoveBlockButton onRemove={handleRemove} />
+        <RemoveBlockButton blockId={id} blocksSetter={setBlocks} />
       </div>
       <CardHeader>
         <CardTitle>{config.label}</CardTitle>
@@ -52,13 +56,15 @@ const BlockCard: React.FunctionComponent<Props> = ({
       <CardContent>
         <div className="flex flex-row items-center justify-center space-x-4 border-t pt-6">
           <ArgumentInput
+            argumentIndex={0}
             placeholder="First argument"
-            onChange={makeArgumentUpdateHandler(0)}
+            blockSetter={blockSetter}
           />
           <PlusIcon className="h-4 w-4" />
           <ArgumentInput
+            argumentIndex={1}
             placeholder="Second argument"
-            onChange={makeArgumentUpdateHandler(1)}
+            blockSetter={blockSetter}
           />
         </div>
       </CardContent>
@@ -66,8 +72,8 @@ const BlockCard: React.FunctionComponent<Props> = ({
         <Alert className="bg-muted">
           <AlertTitle>Output:</AlertTitle>
           <AlertDescription>
-            {args.join('') ? (
-              args.join('')
+            {output ? (
+              output
             ) : (
               <span className="text-muted-foreground">No input yet...</span>
             )}
