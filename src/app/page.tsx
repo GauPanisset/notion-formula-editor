@@ -4,7 +4,7 @@ import React from 'react'
 
 import { useBlocksContext } from '@/entities/block'
 import { BlocksProvider } from '@/entities/block'
-import { AddBlockButton } from '@/features/addBlock'
+import { ChooseBlockSheet } from '@/features/addBlock'
 import { BlockCard, ResultFooter } from '@/widgets'
 
 const Home: React.FunctionComponent = () => {
@@ -16,7 +16,7 @@ const Home: React.FunctionComponent = () => {
         {blocks.map((block) => (
           <BlockCard key={block.id} {...block} />
         ))}
-        <AddBlockButton blocksSetter={setBlocks} />
+        <ChooseBlockSheet blocksSetter={setBlocks} />
       </div>
 
       <ResultFooter />

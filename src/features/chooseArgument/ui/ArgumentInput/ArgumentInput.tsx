@@ -126,7 +126,6 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
             </div>
             <Command className="overflow-visible pt-2">
               <CommandInput placeholder="Find a variable..." />
-              <Separator className="flex-1" />
               <CommandEmpty>No variable found.</CommandEmpty>
               <CommandGroup heading="Variables">
                 {variables.map((variable) => (
