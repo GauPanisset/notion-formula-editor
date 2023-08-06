@@ -5,6 +5,7 @@ import React from 'react'
 import { Block } from '@/entities/block'
 import { cn } from '@/shared/lib/shadcn'
 import { Button } from '@/shared/ui/Button'
+import { Checkbox } from '@/shared/ui/Checkbox'
 import {
   Command,
   CommandEmpty,
@@ -13,13 +14,18 @@ import {
   CommandItem,
 } from '@/shared/ui/Command'
 import { Input } from '@/shared/ui/Input'
+import { Label } from '@/shared/ui/Label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/Popover'
 import { Separator } from '@/shared/ui/Separator'
 
+import { getArgumentNaturalType } from '../../model/getArgumentNaturalType'
+import { ArgumentType } from '../../model/type'
 import { updateBlockArgument } from '../../model/updateBlockArgument'
+import { ArgumentTypeIcon } from '../ArgumentTypeIcon'
 
 type Props = {
   argumentIndex: number
+  argumentTypes: ArgumentType[]
   placeholder: string
   variables?: { value: string; label: string }[]
   blockSetter: React.Dispatch<React.SetStateAction<Block>>
@@ -27,6 +33,7 @@ type Props = {
 
 const ArgumentInput: React.FunctionComponent<Props> = ({
   argumentIndex,
+  argumentTypes,
   placeholder,
   variables = [],
   blockSetter,
@@ -40,10 +47,14 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
   const handleSubmit = (event: React.SyntheticEvent) => {
     event.preventDefault()
     const target = event.target as typeof event.target & {
-      directValue: { value: string }
+      directValue?: { value: string }
+      directValueChecked?: { checked: boolean }
     }
 
-    const newDirectValue = target.directValue.value
+    const newDirectValue =
+      target.directValueChecked?.checked !== undefined
+        ? String(target.directValueChecked.checked)
+        : target.directValue?.value ?? ''
 
     setDirectValue(newDirectValue)
     setSelectedVariable('')
@@ -81,7 +92,25 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
     blockSetter(updateBlockArgument(argumentIndex, new ConstantNode('')))
 
     formRef?.current?.reset()
+    /**
+     * For some reason, the form reset event do not reset the checkbox state.
+     * This is a workaround for that.
+     */
+    if (directValue === 'true') {
+      formRef?.current?.getElementsByTagName('button').item(0)?.click()
+    }
   }
+
+  const currentArgument = selectedVariable
+    ? variables.find((variable) => variable.value === selectedVariable)?.label
+    : directValue
+
+  const currentArgumentType =
+    argumentTypes.length === 1
+      ? argumentTypes[0]
+      : currentArgument
+      ? getArgumentNaturalType(currentArgument)
+      : null
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -90,15 +119,17 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] min-w-0 justify-between"
+          className="w-[200px] min-w-0 justify-between p-2"
         >
-          <span className="truncate">
-            {selectedVariable
-              ? variables.find(
-                  (variable) => variable.value === selectedVariable
-                )?.label
-              : directValue || placeholder}
-          </span>
+          <div className="flex flex-row items-center space-x-2">
+            {currentArgumentType && (
+              <ArgumentTypeIcon
+                type={currentArgumentType}
+                className=" text-muted-foreground"
+              />
+            )}
+            <span className="truncate">{currentArgument || placeholder}</span>
+          </div>
 
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -109,11 +140,31 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
           ref={formRef}
           onSubmit={handleSubmit}
         >
-          <Input
-            defaultValue={directValue}
-            name="directValue"
-            placeholder="Type a value..."
-          />
+          {argumentTypes.includes('string') ? (
+            <Input
+              defaultValue={directValue}
+              name="directValue"
+              placeholder="Type a value..."
+            />
+          ) : argumentTypes.includes('number') ? (
+            <Input
+              defaultValue={directValue}
+              type="number"
+              name="directValue"
+              placeholder="Type a number..."
+            />
+          ) : (
+            <div className="flex flex-1 items-center space-x-2">
+              <Checkbox
+                id="boolean"
+                name="directValueChecked"
+                defaultChecked={directValue === 'true'}
+              />
+              <Label htmlFor="boolean" className="flex-1">
+                Check if <code>true</code>
+              </Label>
+            </div>
+          )}
           <Button type="submit">Submit</Button>
         </form>
 

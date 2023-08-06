@@ -3,6 +3,7 @@ import { ConstantNode, FunctionNode, MathNode, SymbolNode } from 'mathjs'
 import { Block } from './model/type'
 
 type BlockConfig = {
+  argumentsTypes: ('boolean' | 'number' | 'string')[]
   functionNodeFactory: (args?: MathNode[]) => FunctionNode
   helperText: string
   label: string
@@ -11,6 +12,7 @@ type BlockConfig = {
 
 const config: Record<Block['type'], BlockConfig> = {
   add: {
+    argumentsTypes: ['number'],
     functionNodeFactory: (
       args = [new ConstantNode(''), new ConstantNode('')]
     ) => new FunctionNode(new SymbolNode('add'), args),
@@ -19,6 +21,7 @@ const config: Record<Block['type'], BlockConfig> = {
     description: 'Adds two numbers and returns their sum.',
   },
   concat: {
+    argumentsTypes: ['number', 'string'],
     functionNodeFactory: (
       args = [new ConstantNode(''), new ConstantNode('')]
     ) => new FunctionNode(new SymbolNode('concat'), args),

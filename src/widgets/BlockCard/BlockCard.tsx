@@ -56,12 +56,14 @@ const BlockCard: React.FunctionComponent<Props> = ({
       <CardContent>
         <div className="flex flex-row items-center justify-center space-x-4 border-t pt-6">
           <ArgumentInput
+            argumentTypes={config.argumentsTypes}
             argumentIndex={0}
             placeholder="First argument"
             blockSetter={blockSetter}
           />
           <PlusIcon className="h-4 w-4" />
           <ArgumentInput
+            argumentTypes={config.argumentsTypes}
             argumentIndex={1}
             placeholder="Second argument"
             blockSetter={blockSetter}
