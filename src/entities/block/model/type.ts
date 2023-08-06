@@ -1,9 +1,8 @@
-import { FunctionNode } from 'mathjs'
-
 type Block = {
   id: string
-  functionNode: FunctionNode
+  nodeArguments: { type: 'directValue' | 'variable'; value: string }[]
   type: 'add' | 'concat'
+  variableName?: string
 }
 
 export type { Block }

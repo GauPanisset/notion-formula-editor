@@ -1,24 +1,16 @@
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
-import { ConstantNode } from 'mathjs'
 import React from 'react'
 
-import { Block } from '@/entities/block'
+import { Block, useBlocksContext } from '@/entities/block'
+import { getNaturalType } from '@/shared/lib/getNaturalType'
 import { cn } from '@/shared/lib/shadcn'
 import { Button } from '@/shared/ui/Button'
 import { Checkbox } from '@/shared/ui/Checkbox'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from '@/shared/ui/Command'
 import { Input } from '@/shared/ui/Input'
 import { Label } from '@/shared/ui/Label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/Popover'
 import { Separator } from '@/shared/ui/Separator'
 
-import { getArgumentNaturalType } from '../../model/getArgumentNaturalType'
 import { ArgumentType } from '../../model/type'
 import { updateBlockArgument } from '../../model/updateBlockArgument'
 import { ArgumentTypeIcon } from '../ArgumentTypeIcon'
@@ -27,7 +19,7 @@ type Props = {
   argumentIndex: number
   argumentTypes: ArgumentType[]
   placeholder: string
-  variables?: { value: string; label: string }[]
+  variables?: Block[]
   blockSetter: React.Dispatch<React.SetStateAction<Block>>
 }
 
@@ -41,8 +33,11 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
   const formRef = React.useRef<HTMLFormElement>(null)
 
   const [open, setOpen] = React.useState(false)
-  const [selectedVariable, setSelectedVariable] = React.useState('')
+  const [selectedVariableId, setSelectedVariableId] =
+    React.useState<Block['id']>('')
   const [directValue, setDirectValue] = React.useState('')
+
+  const { evaluateBlockOutput } = useBlocksContext()
 
   const handleSubmit = (event: React.SyntheticEvent) => {
     event.preventDefault()
@@ -57,29 +52,27 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
         : target.directValue?.value ?? ''
 
     setDirectValue(newDirectValue)
-    setSelectedVariable('')
+    setSelectedVariableId('')
 
     blockSetter(
-      updateBlockArgument(argumentIndex, new ConstantNode(newDirectValue))
+      updateBlockArgument(argumentIndex, {
+        type: 'directValue',
+        value: newDirectValue,
+      })
     )
 
     setOpen(false)
   }
 
-  const handleSelectVariable = (clickedVariable: string) => {
+  const handleSelectVariable = (clickedVariableId: string) => {
     setDirectValue('')
-    const newSelectedVariable =
-      clickedVariable === selectedVariable ? '' : clickedVariable
-    setSelectedVariable(newSelectedVariable)
+    setSelectedVariableId(clickedVariableId)
 
     blockSetter(
-      updateBlockArgument(
-        argumentIndex,
-        new ConstantNode(
-          variables.find((variable) => variable.value === selectedVariable)
-            ?.label ?? ''
-        )
-      )
+      updateBlockArgument(argumentIndex, {
+        type: 'variable',
+        value: clickedVariableId,
+      })
     )
 
     setOpen(false)
@@ -87,9 +80,11 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
 
   const handleReset = () => {
     setDirectValue('')
-    setSelectedVariable('')
+    setSelectedVariableId('')
 
-    blockSetter(updateBlockArgument(argumentIndex, new ConstantNode('')))
+    blockSetter(
+      updateBlockArgument(argumentIndex, { type: 'directValue', value: '' })
+    )
 
     formRef?.current?.reset()
     /**
@@ -101,15 +96,19 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
     }
   }
 
+  const selectedVariable = variables.find(
+    (variable) => variable.id === selectedVariableId
+  )
+
   const currentArgument = selectedVariable
-    ? variables.find((variable) => variable.value === selectedVariable)?.label
+    ? evaluateBlockOutput(selectedVariable)
     : directValue
 
   const currentArgumentType =
     argumentTypes.length === 1
       ? argumentTypes[0]
       : currentArgument
-      ? getArgumentNaturalType(currentArgument)
+      ? getNaturalType(currentArgument)
       : null
 
   return (
@@ -117,7 +116,6 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          role="combobox"
           aria-expanded={open}
           className="w-[200px] min-w-0 justify-between p-2"
         >
@@ -128,13 +126,29 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
                 className=" text-muted-foreground"
               />
             )}
-            <span className="truncate">{currentArgument || placeholder}</span>
+            <span className="truncate">
+              {selectedVariable ? (
+                <>
+                  {`${selectedVariable.variableName}`}
+                  &nbsp;
+                  <span className="text-muted-foreground">{`= ${evaluateBlockOutput(
+                    selectedVariable
+                  )}`}</span>
+                </>
+              ) : (
+                currentArgument || placeholder
+              )}
+            </span>
           </div>
 
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] space-y-4 p-4">
+        <div className="space-y-2">
+          <h4 className="font-medium leading-none">{placeholder}</h4>
+          <p className="text-sm text-muted-foreground">Set the argument.</p>
+        </div>
         <form
           className="flex w-full items-center space-x-2"
           ref={formRef}
@@ -150,6 +164,7 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
             <Input
               defaultValue={directValue}
               type="number"
+              step="any"
               name="directValue"
               placeholder="Type a number..."
             />
@@ -172,38 +187,41 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
           <>
             <div className="mt-2 flex w-full flex-row items-center space-x-2 text-muted-foreground">
               <Separator className="flex-1" />
-              <span className="text-xs">OR</span>
+              <span className="text-xs">or choose a variable</span>
               <Separator className="flex-1" />
             </div>
-            <Command className="overflow-visible pt-2">
-              <CommandInput placeholder="Find a variable..." />
-              <CommandEmpty>No variable found.</CommandEmpty>
-              <CommandGroup heading="Variables">
-                {variables.map((variable) => (
-                  <CommandItem
-                    value={variable.value}
-                    key={variable.value}
-                    onSelect={handleSelectVariable}
-                  >
-                    {variable.label}
-                    <CheckIcon
-                      className={cn(
-                        'ml-auto h-4 w-4',
-                        selectedVariable === variable.value
-                          ? 'opacity-100'
-                          : 'opacity-0'
-                      )}
-                    />
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </Command>
+            <div>
+              {variables.map((variable) => (
+                <Button
+                  className="w-full"
+                  variant={
+                    selectedVariableId === variable.id ? 'secondary' : 'ghost'
+                  }
+                  key={variable.id}
+                  onClick={() => handleSelectVariable(variable.id)}
+                >
+                  {`${variable.variableName}`}
+                  &nbsp;
+                  <span className="text-muted-foreground">{`= ${evaluateBlockOutput(
+                    variable
+                  )}`}</span>
+                  <CheckIcon
+                    className={cn(
+                      'ml-auto h-4 w-4',
+                      selectedVariableId === variable.id
+                        ? 'opacity-100'
+                        : 'opacity-0'
+                    )}
+                  />
+                </Button>
+              ))}
+            </div>
           </>
         ) : null}
 
         <Button
           className="h-fit border-0 p-0 text-muted-foreground hover:bg-transparent hover:text-accent-foreground"
-          disabled={!directValue && !selectedVariable}
+          disabled={!directValue && !selectedVariableId}
           size="sm"
           variant="ghost"
           onClick={handleReset}
