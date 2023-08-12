@@ -28,9 +28,16 @@ const BlocksProvider: React.FunctionComponent<Props> = ({ children }) => {
          * Update `output` field of each blocks.
          */
         return newBlocks.map((block) => {
+          let output: Block['output'] = undefined
+          try {
+            output = evaluateBlockOutput(block, newBlocks)
+          } catch (error) {
+            if (error instanceof Error) output = error
+          }
+
           return {
             ...block,
-            output: evaluateBlockOutput(block, newBlocks),
+            output,
           }
         })
       })

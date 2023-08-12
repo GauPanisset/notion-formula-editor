@@ -1,6 +1,5 @@
 export { blockConfig } from './config/blockConfig'
 export { defaultArgument } from './config/defaultArgument'
 export { useBlocksContext } from './model/blocksContext'
-export { createBlock } from './model/createBlock'
 export type { Block } from './model/types'
 export { BlocksProvider } from './ui/BlocksProvider'

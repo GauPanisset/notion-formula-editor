@@ -1,7 +1,7 @@
-import { Block, createBlock } from '@/entities/block'
+import { Block, blockConfig } from '@/entities/block'
 
 const addBlock = (type: Block['type']) => (previousBlocks: Block[]) => {
-  return [...previousBlocks, createBlock(type)]
+  return [...previousBlocks, blockConfig[type].factory()]
 }
 
 export { addBlock }

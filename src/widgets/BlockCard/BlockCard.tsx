@@ -4,6 +4,7 @@ import { Block, blockConfig, useBlocksContext } from '@/entities/block'
 import {
   ConditionalArgumentInputs,
   InfiniteArgumentInputs,
+  OperatorArgumentInputs,
   Variable,
 } from '@/features/chooseArgument'
 import { RemoveBlockButton } from '@/features/removeBlock'
@@ -74,13 +75,22 @@ const BlockCard: React.FunctionComponent<Props> = ({
             blockSetter={blockSetter}
             variables={variables}
           />
-        ) : (
+        ) : null}
+        {nodeType === 'function' ? (
           <InfiniteArgumentInputs
             argumentTypes={argumentTypes}
             blockSetter={blockSetter}
             variables={variables}
           />
-        )}
+        ) : null}
+        {nodeType === 'operator' ? (
+          <OperatorArgumentInputs
+            argumentTypes={argumentTypes}
+            blockSetter={blockSetter}
+            label={label}
+            variables={variables}
+          />
+        ) : null}
       </CardContent>
       <CardFooter>
         <Alert
@@ -89,8 +99,9 @@ const BlockCard: React.FunctionComponent<Props> = ({
         >
           <AlertTitle>Output:</AlertTitle>
           <AlertDescription>
-            {hasError ? output.message : null}
-            {!hasError && output ? (
+            {hasError ? (
+              output.message
+            ) : output !== undefined ? (
               output
             ) : (
               <span className="text-muted-foreground">

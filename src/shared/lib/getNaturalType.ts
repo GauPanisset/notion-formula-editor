@@ -1,4 +1,4 @@
-import { parse } from 'mathjs'
+import { isSymbolNode, parse } from 'mathjs'
 
 const getNaturalType = (value: boolean | number | string) => {
   if (typeof value === 'boolean') return 'boolean'
@@ -8,8 +8,9 @@ const getNaturalType = (value: boolean | number | string) => {
     if (value !== '' && /^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$/.test(value))
       return 'number'
     try {
-      parse(value).compile().evaluate()
-      return 'boolean'
+      const mathNode = parse(value)
+      mathNode.compile().evaluate()
+      if (!isSymbolNode(mathNode)) return 'boolean'
     } catch {}
     return 'string'
   }

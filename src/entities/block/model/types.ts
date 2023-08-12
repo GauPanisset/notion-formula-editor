@@ -1,22 +1,21 @@
-import { SymbolNode } from 'mathjs'
-
 type Block = {
   id: string
   nodeArguments: { type: 'directValue' | 'variable'; value: string }[]
   output?: string | Error
-  type: 'add' | 'concat' | 'if'
+  type: 'add' | 'concat' | 'equal' | 'if'
   variableName?: string
 }
 
 type BlockConfig = {
   argumentTypes: ('boolean' | 'number' | 'string')[]
   description: string
+  evaluateOutput: (args: string[]) => string | Error
+  factory: () => Block
   label: string
-  nodeType: 'conditional' | 'function'
   /**
-   * TODO Try to abstract this field since only 'function' nodes use it.
+   * Used only to render the right argument inputs
    */
-  nodeSymbol?: SymbolNode
+  nodeType: 'conditional' | 'function' | 'operator'
 }
 
 export type { Block, BlockConfig }
