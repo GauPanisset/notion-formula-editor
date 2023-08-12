@@ -77,7 +77,7 @@ const blockConfig: Record<Block['type'], BlockConfig> = {
     factory: () => ({
       id: uuidv4(),
       nodeArguments: [defaultArgument, defaultArgument],
-      type: 'concat',
+      type: 'equal',
     }),
     label: 'Equal',
     nodeType: 'operator',
@@ -108,10 +108,26 @@ const blockConfig: Record<Block['type'], BlockConfig> = {
     factory: () => ({
       id: uuidv4(),
       nodeArguments: [defaultArgument, defaultArgument, defaultArgument],
-      type: 'concat',
+      type: 'if',
     }),
     label: 'If',
     nodeType: 'conditional',
+  },
+  property: {
+    argumentTypes: ['boolean', 'number', 'string'],
+    description: 'Returns the value of the property for each entry.',
+    evaluateOutput: (args) => {
+      if (!args[0]) return undefined
+
+      return String(args[1])
+    },
+    factory: () => ({
+      id: uuidv4(),
+      nodeArguments: [defaultArgument, defaultArgument],
+      type: 'property',
+    }),
+    label: 'Property',
+    nodeType: 'property',
   },
 }
 

@@ -7,6 +7,7 @@ import {
   OperatorArgumentInputs,
   Variable,
 } from '@/features/chooseArgument'
+import { PropertyArgumentInputs } from '@/features/chooseArgument/ui/PropertyArgumentInputs'
 import { RemoveBlockButton } from '@/features/removeBlock'
 import { VariableNameInput } from '@/features/setVariableName'
 import { getNaturalType } from '@/shared/lib/getNaturalType'
@@ -89,6 +90,12 @@ const BlockCard: React.FunctionComponent<Props> = ({
             blockSetter={blockSetter}
             label={label}
             variables={variables}
+          />
+        ) : null}
+        {nodeType === 'property' ? (
+          <PropertyArgumentInputs
+            argumentTypes={argumentTypes}
+            blockSetter={blockSetter}
           />
         ) : null}
       </CardContent>
