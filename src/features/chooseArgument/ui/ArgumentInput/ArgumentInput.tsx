@@ -105,29 +105,30 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
         <Button
           variant="outline"
           aria-expanded={open}
-          className="w-[200px] min-w-0 justify-between p-2"
+          className="w-[200px] min-w-0 p-2"
         >
-          <div className="flex flex-row items-center space-x-2">
+          <div className="flex w-full flex-row items-center space-x-2">
             {currentArgumentType && (
               <ArgumentTypeIcon
                 type={currentArgumentType}
-                className=" text-muted-foreground"
+                className="text-muted-foreground"
               />
             )}
-            <span className="truncate">
+            <div className="flex min-w-0 flex-1 justify-start">
               {selectedVariable ? (
                 <>
-                  {`${selectedVariable.variableName}`}
+                  <span className="truncate">{`${selectedVariable.variableName}`}</span>
                   &nbsp;
-                  <span className="text-muted-foreground">{`= ${selectedVariable.output}`}</span>
+                  <span className="whitespace-nowrap text-muted-foreground">{`= ${selectedVariable.output}`}</span>
                 </>
               ) : (
-                currentArgument || placeholder
+                <span className="truncate">
+                  {currentArgument || placeholder}
+                </span>
               )}
-            </span>
+            </div>
+            <CaretSortIcon className="ml-2 h-4 w-4 text-muted-foreground" />
           </div>
-
-          <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] space-y-4 p-4">
@@ -186,17 +187,27 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
                   key={variable.id}
                   onClick={() => handleSelectVariable(variable.id)}
                 >
-                  {`${variable.variableName}`}
-                  &nbsp;
-                  <span className="text-muted-foreground">{`= ${variable.output}`}</span>
-                  <CheckIcon
-                    className={cn(
-                      'ml-auto h-4 w-4',
-                      selectedVariableId === variable.id
-                        ? 'opacity-100'
-                        : 'opacity-0'
+                  <div className="flex w-full flex-row items-center space-x-2">
+                    {currentArgumentType && (
+                      <ArgumentTypeIcon
+                        type={currentArgumentType}
+                        className="text-muted-foreground"
+                      />
                     )}
-                  />
+                    <div className="flex min-w-0 flex-1 justify-start">
+                      <span className="truncate">{`${variable.variableName}`}</span>
+                      &nbsp;
+                      <span className="whitespace-nowrap text-muted-foreground">{`= ${variable.output}`}</span>
+                    </div>
+                    <CheckIcon
+                      className={cn(
+                        'ml-auto h-4 w-4',
+                        selectedVariableId === variable.id
+                          ? 'opacity-100'
+                          : 'opacity-0'
+                      )}
+                    />
+                  </div>
                 </Button>
               ))}
             </div>
