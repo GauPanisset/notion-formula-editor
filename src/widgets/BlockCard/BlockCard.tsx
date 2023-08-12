@@ -1,8 +1,11 @@
-import { PlusIcon } from '@radix-ui/react-icons'
 import React from 'react'
 
 import { Block, blockConfig, useBlocksContext } from '@/entities/block'
-import { ArgumentInput } from '@/features/chooseArgument'
+import {
+  ConditionalArgumentInputs,
+  InfiniteArgumentInputs,
+  Variable,
+} from '@/features/chooseArgument'
 import { RemoveBlockButton } from '@/features/removeBlock'
 import { VariableNameInput } from '@/features/setVariableName'
 import { getNaturalType } from '@/shared/lib/getNaturalType'
@@ -21,34 +24,35 @@ type Props = Block
 
 const BlockCard: React.FunctionComponent<Props> = ({
   id,
-  nodeArguments,
+  output,
   type,
   variableName,
 }) => {
-  const { argumentsTypes, description, label } = blockConfig[type]
-  const { blocks, setBlocks, makeBlockSetter, evaluateBlockOutput } =
-    useBlocksContext()
+  const { argumentTypes, description, label, nodeType } = blockConfig[type]
+  const { getBlocks, setBlocks, setBlock } = useBlocksContext()
 
-  const blockSetter = React.useMemo(
-    () => makeBlockSetter(id),
-    [id, makeBlockSetter]
+  const blocks = getBlocks()
+
+  const blockSetter = React.useCallback(
+    (input: React.SetStateAction<Block>) => setBlock(id, input),
+    [id, setBlock]
   )
 
   const variables = blocks.filter(
     (block) =>
       block.id !== id &&
       block.variableName &&
-      argumentsTypes.includes(getNaturalType(evaluateBlockOutput(block))) &&
+      /**
+       * These two following lines unsure that the variables have a valid output.
+       * Thus the `as Variable[]` is safe.
+       */
+      block.output &&
+      !(block.output instanceof Error) &&
+      argumentTypes.includes(getNaturalType(block.output)) &&
       !block.nodeArguments.some((nodeArgument) => nodeArgument.value === id)
-  )
+  ) as Variable[]
 
-  const output = React.useMemo(() => {
-    try {
-      return evaluateBlockOutput({ nodeArguments, type })
-    } catch (error) {
-      return error
-    }
-  }, [nodeArguments, type, evaluateBlockOutput])
+  const hasError = output instanceof Error
 
   return (
     <Card className="relative w-full">
@@ -64,40 +68,30 @@ const BlockCard: React.FunctionComponent<Props> = ({
         />
       </CardHeader>
       <CardContent>
-        <div className="flex flex-row items-center justify-center space-x-4 border-t pt-6">
-          <ArgumentInput
-            argumentTypes={argumentsTypes}
-            argumentIndex={0}
-            placeholder="First argument"
+        {nodeType === 'conditional' ? (
+          <ConditionalArgumentInputs
+            argumentTypes={argumentTypes}
             blockSetter={blockSetter}
             variables={variables}
           />
-          <PlusIcon className="h-4 w-4" />
-          <ArgumentInput
-            argumentTypes={argumentsTypes}
-            argumentIndex={1}
-            placeholder="Second argument"
+        ) : (
+          <InfiniteArgumentInputs
+            argumentTypes={argumentTypes}
             blockSetter={blockSetter}
             variables={variables}
           />
-        </div>
+        )}
       </CardContent>
       <CardFooter>
         <Alert
-          variant={output instanceof Error ? 'destructive' : 'default'}
-          className={cn(
-            '',
-            output instanceof Error ? 'bg-destructive/5' : 'bg-muted'
-          )}
+          variant={hasError ? 'destructive' : 'default'}
+          className={cn('', hasError ? 'bg-destructive/5' : 'bg-muted')}
         >
           <AlertTitle>Output:</AlertTitle>
           <AlertDescription>
-            {output ? (
-              output instanceof Error ? (
-                output.message
-              ) : (
-                output
-              )
+            {hasError ? output.message : null}
+            {!hasError && output ? (
+              output
             ) : (
               <span className="text-muted-foreground">
                 Set the argument to see an output...

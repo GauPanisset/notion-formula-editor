@@ -1,84 +1,63 @@
-import { ConstantNode } from 'mathjs'
 import React from 'react'
 
-import { config } from '../../config'
-import { validateArgumentType } from '../../lib/validateArgumentType'
+import { evaluateBlockOutput } from '../../lib/evaluateBlockOutput'
 import { BlocksContext } from '../../model/blocksContext'
-import { Block } from '../../model/type'
+import { Block } from '../../model/types'
 
 type Props = {
   children: React.ReactNode
 }
 
 const BlocksProvider: React.FunctionComponent<Props> = ({ children }) => {
-  const [blocks, setBlocks] = React.useState<Block[]>([])
+  const [blocks, reactSetBlocks] = React.useState<Block[]>([])
 
-  const makeBlockSetter = React.useCallback(
-    (blockId: string): React.Dispatch<React.SetStateAction<Block>> =>
-      (blockOrFunction) => {
-        setBlocks((previousBlocks) => {
-          const newBlocks = previousBlocks.map((block) => {
-            const newBlock =
-              typeof blockOrFunction === 'function'
-                ? blockOrFunction(block)
-                : blockOrFunction
-
-            return block.id === blockId ? newBlock : block
-          })
-          return newBlocks
-        })
-      },
-    []
+  const getBlock = React.useCallback(
+    (blockId: string) => blocks.find((block) => block.id === blockId),
+    [blocks]
   )
 
-  const evaluateBlockOutput = React.useCallback(
-    (block: Pick<Block, 'nodeArguments' | 'type'>): any => {
-      if (block.nodeArguments.length === 0) return null
+  const getBlocks = React.useCallback(() => blocks, [blocks])
 
-      const { argumentsTypes, nodeFactory } = config[block.type]
+  const setBlocks: React.Dispatch<React.SetStateAction<Block[]>> =
+    React.useCallback((input) => {
+      reactSetBlocks((previousBlocks) => {
+        const newBlocks =
+          typeof input === 'function' ? input(previousBlocks) : input
 
-      const args = block.nodeArguments.map((argument, index) => {
-        const { type, value } = argument
-
-        if (type === 'directValue') {
-          validateArgumentType(
-            value,
-            argumentsTypes,
-            `Argument n°${index + 1} type mismatch`
-          )
-          return new ConstantNode(value)
-        }
-
-        const argumentBlock = blocks.find((block) => block.id === value)
-        if (!argumentBlock)
-          throw new Error(
-            `Can not find any block with id: ${value} but set as argument`
-          )
-
-        const evaluatedValue = String(evaluateBlockOutput(argumentBlock))
-
-        validateArgumentType(
-          evaluatedValue,
-          argumentsTypes,
-          `Argument n°${index + 1} type mismatch`
-        )
-
-        return new ConstantNode(evaluatedValue ?? '')
+        /**
+         * Update `output` field of each blocks.
+         */
+        return newBlocks.map((block) => {
+          return {
+            ...block,
+            output: evaluateBlockOutput(block, newBlocks),
+          }
+        })
       })
+    }, [])
 
-      return nodeFactory(args).compile().evaluate()
+  const setBlock = React.useCallback(
+    (blockId: string, input: React.SetStateAction<Block>) => {
+      setBlocks((previousBlocks) => {
+        const newBlocks = previousBlocks.map((block) => {
+          const newBlock = typeof input === 'function' ? input(block) : input
+
+          return block.id === blockId ? newBlock : block
+        })
+        return newBlocks
+      })
     },
-    [blocks]
+    [setBlocks]
   )
 
   const blocksContext = React.useMemo(
     () => ({
-      blocks,
+      getBlock,
+      getBlocks,
+      setBlock,
       setBlocks,
-      makeBlockSetter,
-      evaluateBlockOutput,
     }),
-    [blocks, evaluateBlockOutput, makeBlockSetter]
+    [getBlock, getBlocks, setBlock, setBlocks]
   )
 
   return (

@@ -1,7 +1,7 @@
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons'
 import React from 'react'
 
-import { Block, useBlocksContext } from '@/entities/block'
+import { Block, defaultArgument } from '@/entities/block'
 import { getNaturalType } from '@/shared/lib/getNaturalType'
 import { cn } from '@/shared/lib/shadcn'
 import { Button } from '@/shared/ui/Button'
@@ -11,19 +11,11 @@ import { Label } from '@/shared/ui/Label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/Popover'
 import { Separator } from '@/shared/ui/Separator'
 
-import { ArgumentType } from '../../model/type'
+import { ArgumentInputProps } from '../../model/types'
 import { updateBlockArgument } from '../../model/updateBlockArgument'
 import { ArgumentTypeIcon } from '../ArgumentTypeIcon'
 
-type Props = {
-  argumentIndex: number
-  argumentTypes: ArgumentType[]
-  placeholder: string
-  variables?: Block[]
-  blockSetter: React.Dispatch<React.SetStateAction<Block>>
-}
-
-const ArgumentInput: React.FunctionComponent<Props> = ({
+const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
   argumentIndex,
   argumentTypes,
   placeholder,
@@ -36,8 +28,6 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
   const [selectedVariableId, setSelectedVariableId] =
     React.useState<Block['id']>('')
   const [directValue, setDirectValue] = React.useState('')
-
-  const { evaluateBlockOutput } = useBlocksContext()
 
   const handleSubmit = (event: React.SyntheticEvent) => {
     event.preventDefault()
@@ -82,9 +72,7 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
     setDirectValue('')
     setSelectedVariableId('')
 
-    blockSetter(
-      updateBlockArgument(argumentIndex, { type: 'directValue', value: '' })
-    )
+    blockSetter(updateBlockArgument(argumentIndex, defaultArgument))
 
     formRef?.current?.reset()
     /**
@@ -101,7 +89,7 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
   )
 
   const currentArgument = selectedVariable
-    ? evaluateBlockOutput(selectedVariable)
+    ? selectedVariable.output
     : directValue
 
   const currentArgumentType =
@@ -131,9 +119,7 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
                 <>
                   {`${selectedVariable.variableName}`}
                   &nbsp;
-                  <span className="text-muted-foreground">{`= ${evaluateBlockOutput(
-                    selectedVariable
-                  )}`}</span>
+                  <span className="text-muted-foreground">{`= ${selectedVariable.output}`}</span>
                 </>
               ) : (
                 currentArgument || placeholder
@@ -202,9 +188,7 @@ const ArgumentInput: React.FunctionComponent<Props> = ({
                 >
                   {`${variable.variableName}`}
                   &nbsp;
-                  <span className="text-muted-foreground">{`= ${evaluateBlockOutput(
-                    variable
-                  )}`}</span>
+                  <span className="text-muted-foreground">{`= ${variable.output}`}</span>
                   <CheckIcon
                     className={cn(
                       'ml-auto h-4 w-4',

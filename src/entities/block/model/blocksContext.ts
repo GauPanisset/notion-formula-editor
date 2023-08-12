@@ -2,15 +2,13 @@ import React from 'react'
 
 import { assertNotNull } from '@/shared/lib/assertNotNull'
 
-import { Block } from './type'
+import { Block } from './types'
 
 type BlocksContextType = {
-  blocks: Block[]
+  getBlock: (blockId: string) => Block | undefined
+  getBlocks: () => Block[]
+  setBlock: (blockId: string, input: React.SetStateAction<Block>) => void
   setBlocks: React.Dispatch<React.SetStateAction<Block[]>>
-  makeBlockSetter: (
-    blockId: string
-  ) => React.Dispatch<React.SetStateAction<Block>>
-  evaluateBlockOutput: (block: Pick<Block, 'nodeArguments' | 'type'>) => any
 }
 
 const BlocksContext = React.createContext<BlocksContextType | null>(null)

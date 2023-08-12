@@ -1,14 +1,16 @@
 import { v4 as uuidv4 } from 'uuid'
 
-import { Block } from './type'
+import { blockConfig } from '../config/blockConfig'
+import { defaultArgument } from '../config/defaultArgument'
+import { Block } from './types'
 
 const createBlock = (type: Block['type']): Block => {
   return {
     id: uuidv4(),
-    nodeArguments: [
-      { type: 'directValue', value: '' },
-      { type: 'directValue', value: '' },
-    ],
+    nodeArguments:
+      blockConfig[type].nodeType === 'conditional'
+        ? [defaultArgument, defaultArgument, defaultArgument]
+        : [defaultArgument, defaultArgument],
     type,
   }
 }

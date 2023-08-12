@@ -8,7 +8,9 @@ import { ChooseBlockSheet } from '@/features/addBlock'
 import { BlockCard, ResultFooter } from '@/widgets'
 
 const Home: React.FunctionComponent = () => {
-  const { blocks, setBlocks } = useBlocksContext()
+  const { getBlocks, setBlocks } = useBlocksContext()
+
+  const blocks = getBlocks()
 
   return (
     <main className="m-auto flex h-full max-w-[640px] flex-col p-4">

@@ -6,7 +6,7 @@ import {
 
 import { cn } from '@/shared/lib/shadcn'
 
-import { ArgumentType } from '../../model/type'
+import { ArgumentType } from '../../model/types'
 
 type Props = {
   className: string
