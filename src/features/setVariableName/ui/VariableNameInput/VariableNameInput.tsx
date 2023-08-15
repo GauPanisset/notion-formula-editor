@@ -49,7 +49,7 @@ const VariableNameInput: React.FunctionComponent<Props> = ({
               variableName ? '' : 'text-muted-foreground'
             )}
           >
-            {variableName ? variableName : 'Set variable name'}
+            {variableName ? variableName : 'Use as variable'}
           </span>
         </Button>
       </PopoverTrigger>

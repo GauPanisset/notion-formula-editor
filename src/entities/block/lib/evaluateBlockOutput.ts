@@ -5,10 +5,10 @@ import { validateArgumentType } from './validateArgumentType'
 const evaluateBlockOutput = (
   block: Block,
   blocksForArguments: Block[]
-): string | undefined | Error => {
+): boolean | number | string | undefined | Error => {
   if (block.nodeArguments.length === 0) return undefined
 
-  const { argumentTypes, evaluateOutput } = blockConfig[block.type]
+  const config = blockConfig[block.type]
 
   /**
    * Retrieve the block argument string values.
@@ -16,10 +16,10 @@ const evaluateBlockOutput = (
   const args = block.nodeArguments.map((argument, index) => {
     const { type, value } = argument
 
-    if (type === 'directValue') {
+    if (type === 'constant') {
       validateArgumentType(
         value,
-        argumentTypes,
+        config.argumentTypes,
         `Argument n°${index + 1} type mismatch`
       )
 
@@ -36,10 +36,10 @@ const evaluateBlockOutput = (
       blocksForArguments
     )
 
-    if (typeof evaluatedValue === 'string') {
+    if (!(evaluatedValue instanceof Error) && evaluatedValue !== undefined) {
       validateArgumentType(
         evaluatedValue,
-        argumentTypes,
+        config.argumentTypes,
         `Argument n°${index + 1} type mismatch`
       )
 
@@ -51,7 +51,7 @@ const evaluateBlockOutput = (
 
   if (args.every((arg) => arg === '')) return undefined
 
-  return evaluateOutput(args)
+  return config.evaluateOutput(args)
 }
 
 export { evaluateBlockOutput }

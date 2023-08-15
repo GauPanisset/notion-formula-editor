@@ -16,7 +16,7 @@ const OperatorArgumentInputs: React.FunctionComponent<
         blockSetter={blockSetter}
         variables={variables}
       />
-      <span className="text-sm lowercase">{`${label}s`}</span>
+      <span className="text-sm lowercase">{label}</span>
       <ArgumentInput
         argumentTypes={argumentTypes}
         argumentIndex={1}

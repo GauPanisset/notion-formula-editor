@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { evaluateBlockOutput } from '../../lib/evaluateBlockOutput'
+import { makeBlockMathNode } from '../../lib/makeBlockMathNode'
 import { BlocksContext } from '../../model/blocksContext'
 import { Block } from '../../model/types'
 
@@ -29,14 +30,20 @@ const BlocksProvider: React.FunctionComponent<Props> = ({ children }) => {
          */
         return newBlocks.map((block) => {
           let output: Block['output'] = undefined
+          let formula: Block['formula'] = undefined
           try {
             output = evaluateBlockOutput(block, newBlocks)
           } catch (error) {
             if (error instanceof Error) output = error
           }
 
+          if (output !== undefined) {
+            formula = makeBlockMathNode(block, newBlocks)?.toString()
+          }
+
           return {
             ...block,
+            formula,
             output,
           }
         })

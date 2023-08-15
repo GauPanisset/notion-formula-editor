@@ -12,7 +12,6 @@ import { RemoveBlockButton } from '@/features/removeBlock'
 import { VariableNameInput } from '@/features/setVariableName'
 import { getNaturalType } from '@/shared/lib/getNaturalType'
 import { cn } from '@/shared/lib/shadcn'
-import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/Alert'
 import {
   Card,
   CardContent,
@@ -21,11 +20,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/ui/Card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/Tabs'
 
 type Props = Block
 
 const BlockCard: React.FunctionComponent<Props> = ({
   id,
+  formula,
   output,
   type,
   variableName,
@@ -50,7 +51,7 @@ const BlockCard: React.FunctionComponent<Props> = ({
        */
       block.output &&
       !(block.output instanceof Error) &&
-      argumentTypes.includes(getNaturalType(block.output)) &&
+      argumentTypes.includes(getNaturalType(block.output).type) &&
       !block.nodeArguments.some((nodeArgument) => nodeArgument.value === id)
   ) as Variable[]
 
@@ -62,12 +63,14 @@ const BlockCard: React.FunctionComponent<Props> = ({
         <RemoveBlockButton blockId={id} blocksSetter={setBlocks} />
       </div>
       <CardHeader>
-        <CardTitle>{label}</CardTitle>
+        <CardTitle>
+          <span className="mr-4">{label}</span>
+          <VariableNameInput
+            variableName={variableName}
+            blockSetter={blockSetter}
+          />
+        </CardTitle>
         <CardDescription>{description}</CardDescription>
-        <VariableNameInput
-          variableName={variableName}
-          blockSetter={blockSetter}
-        />
       </CardHeader>
       <CardContent>
         {nodeType === 'conditional' ? (
@@ -100,23 +103,46 @@ const BlockCard: React.FunctionComponent<Props> = ({
         ) : null}
       </CardContent>
       <CardFooter>
-        <Alert
-          variant={hasError ? 'destructive' : 'default'}
-          className={cn('', hasError ? 'bg-destructive/5' : 'bg-muted')}
+        <Tabs
+          defaultValue="output"
+          className={cn(
+            'h-full w-full rounded-lg border',
+            hasError
+              ? 'border-destructive/50 text-destructive dark:border-destructive bg-destructive/5'
+              : 'bg-muted'
+          )}
         >
-          <AlertTitle>Output:</AlertTitle>
-          <AlertDescription>
+          <TabsList className="grid w-full grid-cols-2 bg-transparent">
+            <TabsTrigger disabled={hasError} value="output">
+              Output
+            </TabsTrigger>
+            <TabsTrigger disabled={hasError} value="formula">
+              Formula
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="output" className="m-1 mt-0 p-2 text-sm">
             {hasError ? (
               output.message
             ) : output !== undefined ? (
-              output
+              String(output)
             ) : (
               <span className="text-muted-foreground">
-                Set the argument to see an output...
+                Set the arguments to see the output...
               </span>
             )}
-          </AlertDescription>
-        </Alert>
+          </TabsContent>
+          <TabsContent value="formula" className="m-1 mt-0 p-2 text-sm">
+            {hasError ? (
+              output.message
+            ) : formula !== undefined ? (
+              formula
+            ) : (
+              <span className="text-muted-foreground">
+                Set the arguments to see the formula...
+              </span>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardFooter>
     </Card>
   )

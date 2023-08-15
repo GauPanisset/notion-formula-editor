@@ -11,6 +11,7 @@ import { Label } from '@/shared/ui/Label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/Popover'
 import { Separator } from '@/shared/ui/Separator'
 
+import { getArgumentType } from '../../lib/getArgumentType'
 import { ArgumentInputProps } from '../../model/types'
 import { updateBlockArgument } from '../../model/updateBlockArgument'
 import { ArgumentTypeIcon } from '../ArgumentTypeIcon'
@@ -27,7 +28,15 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
   const [open, setOpen] = React.useState(false)
   const [selectedVariableId, setSelectedVariableId] =
     React.useState<Block['id']>('')
-  const [directValue, setDirectValue] = React.useState('')
+  const [directValue, setDirectValue] = React.useState<
+    boolean | number | string
+  >('')
+
+  const inputType = argumentTypes.includes('string')
+    ? 'string'
+    : argumentTypes.includes('number')
+    ? 'number'
+    : 'boolean'
 
   const handleSubmit = (event: React.SyntheticEvent) => {
     event.preventDefault()
@@ -36,17 +45,18 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
       directValueChecked?: { checked: boolean }
     }
 
-    const newDirectValue =
+    const newDirectValue = getNaturalType(
       target.directValueChecked?.checked !== undefined
-        ? String(target.directValueChecked.checked)
+        ? target.directValueChecked.checked
         : target.directValue?.value ?? ''
+    ).value
 
     setDirectValue(newDirectValue)
     setSelectedVariableId('')
 
     blockSetter(
       updateBlockArgument(argumentIndex, {
-        type: 'directValue',
+        type: 'constant',
         value: newDirectValue,
       })
     )
@@ -95,8 +105,8 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
   const currentArgumentType =
     argumentTypes.length === 1
       ? argumentTypes[0]
-      : currentArgument
-      ? getNaturalType(currentArgument)
+      : currentArgument !== ''
+      ? getArgumentType(currentArgument, Boolean(selectedVariable))
       : null
 
   return (
@@ -114,7 +124,7 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
                 className="text-muted-foreground"
               />
             )}
-            <div className="flex min-w-0 flex-1 justify-start">
+            <div className="flex min-w-0 flex-1 justify-start truncate">
               {selectedVariable ? (
                 <>
                   <span className="truncate">{`${selectedVariable.variableName}`}</span>
@@ -123,7 +133,9 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
                 </>
               ) : (
                 <span className="truncate">
-                  {currentArgument || placeholder}
+                  {currentArgument !== ''
+                    ? String(currentArgument)
+                    : placeholder}
                 </span>
               )}
             </div>
@@ -131,7 +143,7 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] space-y-4 p-4">
+      <PopoverContent className="flex max-h-[50vh] w-[300px] flex-col space-y-4 p-4">
         <div className="space-y-2">
           <h4 className="font-medium leading-none">{placeholder}</h4>
           <p className="text-sm text-muted-foreground">Set the argument.</p>
@@ -141,15 +153,15 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
           ref={formRef}
           onSubmit={handleSubmit}
         >
-          {argumentTypes.includes('string') ? (
+          {inputType === 'string' ? (
             <Input
-              defaultValue={directValue}
+              defaultValue={String(directValue)}
               name="directValue"
               placeholder="Type a value..."
             />
-          ) : argumentTypes.includes('number') ? (
+          ) : inputType === 'number' ? (
             <Input
-              defaultValue={directValue}
+              defaultValue={String(directValue)}
               type="number"
               step="any"
               name="directValue"
@@ -177,7 +189,7 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
               <span className="text-xs">or choose a variable</span>
               <Separator className="flex-1" />
             </div>
-            <div>
+            <div className="overflow-scroll">
               {variables.map((variable) => (
                 <Button
                   className="w-full"
@@ -188,13 +200,11 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
                   onClick={() => handleSelectVariable(variable.id)}
                 >
                   <div className="flex w-full flex-row items-center space-x-2">
-                    {currentArgumentType && (
-                      <ArgumentTypeIcon
-                        type={currentArgumentType}
-                        className="text-muted-foreground"
-                      />
-                    )}
-                    <div className="flex min-w-0 flex-1 justify-start">
+                    <ArgumentTypeIcon
+                      type={getNaturalType(variable.output).type}
+                      className="text-muted-foreground"
+                    />
+                    <div className="flex min-w-0 flex-1 justify-start truncate">
                       <span className="truncate">{`${variable.variableName}`}</span>
                       &nbsp;
                       <span className="whitespace-nowrap text-muted-foreground">{`= ${variable.output}`}</span>
@@ -215,7 +225,7 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
         ) : null}
 
         <Button
-          className="h-fit border-0 p-0 text-muted-foreground hover:bg-transparent hover:text-accent-foreground"
+          className="h-fit self-start border-0 p-0 text-muted-foreground hover:bg-transparent hover:text-accent-foreground"
           disabled={!directValue && !selectedVariableId}
           size="sm"
           variant="ghost"
