@@ -41,7 +41,7 @@ const ChooseBlockSheet: React.FunctionComponent<Props> = ({ blocksSetter }) => {
           </SheetDescription>
         </SheetHeader>
         <Separator className="my-6" />
-        <div className="grid grid-cols-3	gap-6">
+        <div className="grid grid-cols-3 gap-6">
           {Object.keys(blockConfig).map((_blockType) => {
             const blockType = _blockType as Block['type']
             const { description, label } = blockConfig[blockType]
@@ -49,7 +49,7 @@ const ChooseBlockSheet: React.FunctionComponent<Props> = ({ blocksSetter }) => {
             return (
               <SheetClose asChild key={blockType}>
                 <Button
-                  className="h-fit cursor-pointer auto-cols-auto p-0"
+                  className="h-auto cursor-pointer auto-cols-auto items-start justify-start p-0"
                   variant="outline"
                   onClick={() => handleChooseBlock(blockType)}
                 >
