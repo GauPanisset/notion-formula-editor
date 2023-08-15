@@ -1,14 +1,25 @@
+import { Block } from '@/entities/block'
+
 import { ArgumentInputProps } from '../../model/types'
 import { ArgumentInput } from '../ArgumentInput'
 
-const ConditionalArgumentInputs: React.FunctionComponent<
-  Pick<ArgumentInputProps, 'argumentTypes' | 'blockSetter' | 'variables'>
-> = ({ argumentTypes, blockSetter, variables }) => {
+type Props = Pick<
+  ArgumentInputProps,
+  'argumentTypes' | 'blockSetter' | 'variables'
+> & { nodeArguments: Block['nodeArguments'] }
+
+const ConditionalArgumentInputs: React.FunctionComponent<Props> = ({
+  argumentTypes,
+  blockSetter,
+  nodeArguments,
+  variables,
+}) => {
   return (
-    <div className="flex flex-col space-y-4 border-t pt-6">
+    <div className="flex flex-col space-y-4">
       <div>
         <span className="mr-4 text-sm">When</span>
         <ArgumentInput
+          argument={nodeArguments[0]}
           argumentTypes={argumentTypes}
           argumentIndex={0}
           placeholder="Condition"
@@ -19,6 +30,7 @@ const ConditionalArgumentInputs: React.FunctionComponent<
       <div>
         <span className="mx-4 text-sm">then</span>
         <ArgumentInput
+          argument={nodeArguments[1]}
           argumentTypes={argumentTypes}
           argumentIndex={1}
           placeholder="True argument"
@@ -29,6 +41,7 @@ const ConditionalArgumentInputs: React.FunctionComponent<
       <div>
         <span className="mx-4 text-sm">else</span>
         <ArgumentInput
+          argument={nodeArguments[2]}
           argumentTypes={argumentTypes}
           argumentIndex={2}
           placeholder="False argument"

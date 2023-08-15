@@ -1,12 +1,23 @@
+import { Block } from '@/entities/block'
+
 import { ArgumentInputProps } from '../../model/types'
 import { ArgumentInput } from '../ArgumentInput'
 
-const InfiniteArgumentInputs: React.FunctionComponent<
-  Pick<ArgumentInputProps, 'argumentTypes' | 'blockSetter' | 'variables'>
-> = ({ argumentTypes, blockSetter, variables }) => {
+type Props = Pick<
+  ArgumentInputProps,
+  'argumentTypes' | 'blockSetter' | 'variables'
+> & { nodeArguments: Block['nodeArguments'] }
+
+const InfiniteArgumentInputs: React.FunctionComponent<Props> = ({
+  argumentTypes,
+  blockSetter,
+  nodeArguments,
+  variables,
+}) => {
   return (
-    <div className="flex flex-row items-center justify-center space-x-4 border-t pt-6">
+    <div className="flex flex-row items-center justify-center space-x-4">
       <ArgumentInput
+        argument={nodeArguments[0]}
         argumentTypes={argumentTypes}
         argumentIndex={0}
         placeholder="First argument"
@@ -15,6 +26,7 @@ const InfiniteArgumentInputs: React.FunctionComponent<
       />
       <span className="text-sm">and</span>
       <ArgumentInput
+        argument={nodeArguments[1]}
         argumentTypes={argumentTypes}
         argumentIndex={1}
         placeholder="Second argument"

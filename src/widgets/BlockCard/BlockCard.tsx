@@ -1,3 +1,4 @@
+import { CaretSortIcon, QuestionMarkCircledIcon } from '@radix-ui/react-icons'
 import React from 'react'
 
 import { Block, blockConfig, useBlocksContext } from '@/entities/block'
@@ -12,25 +13,38 @@ import { RemoveBlockButton } from '@/features/removeBlock'
 import { VariableNameInput } from '@/features/setVariableName'
 import { getNaturalType } from '@/shared/lib/getNaturalType'
 import { cn } from '@/shared/lib/shadcn'
+import { Button } from '@/shared/ui/Button'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from '@/shared/ui/Card'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/shared/ui/Collapsible'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/Tabs'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/shared/ui/Tooltip'
 
 type Props = Block
 
 const BlockCard: React.FunctionComponent<Props> = ({
   id,
   formula,
+  nodeArguments,
   output,
   type,
   variableName,
 }) => {
+  const [isOpen, setIsOpen] = React.useState(true)
   const { argumentTypes, description, label, nodeType } = blockConfig[type]
   const { getBlocks, setBlocks, setBlock } = useBlocksContext()
 
@@ -59,50 +73,79 @@ const BlockCard: React.FunctionComponent<Props> = ({
 
   return (
     <Card className="relative w-full">
-      <div className="absolute right-3 top-3">
-        <RemoveBlockButton blockId={id} blocksSetter={setBlocks} />
-      </div>
-      <CardHeader>
-        <CardTitle>
-          <span className="mr-4">{label}</span>
-          <VariableNameInput
-            variableName={variableName}
-            blockSetter={blockSetter}
-          />
-        </CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {nodeType === 'conditional' ? (
-          <ConditionalArgumentInputs
-            argumentTypes={argumentTypes}
-            blockSetter={blockSetter}
-            variables={variables}
-          />
-        ) : null}
-        {nodeType === 'function' ? (
-          <InfiniteArgumentInputs
-            argumentTypes={argumentTypes}
-            blockSetter={blockSetter}
-            variables={variables}
-          />
-        ) : null}
-        {nodeType === 'operator' ? (
-          <OperatorArgumentInputs
-            argumentTypes={argumentTypes}
-            blockSetter={blockSetter}
-            label={label}
-            variables={variables}
-          />
-        ) : null}
-        {nodeType === 'property' ? (
-          <PropertyArgumentInputs
-            argumentTypes={argumentTypes}
-            blockSetter={blockSetter}
-          />
-        ) : null}
-      </CardContent>
-      <CardFooter>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CardHeader className="p-4">
+          <CardTitle className="flex flex-row items-center justify-between">
+            <div className="flex flex-row items-center">
+              <span className="mr-2">{label}</span>
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <QuestionMarkCircledIcon className="mr-4 h-4 w-4 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <VariableNameInput
+                variableName={variableName}
+                blockSetter={blockSetter}
+              />
+            </div>
+            <div className="flex flex-row items-center space-x-4">
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <CaretSortIcon className="h-4 w-4" />
+                  <span className="sr-only">Toggle</span>
+                </Button>
+              </CollapsibleTrigger>
+              <RemoveBlockButton blockId={id} blocksSetter={setBlocks} />
+            </div>
+          </CardTitle>
+        </CardHeader>
+
+        <CollapsibleContent>
+          <CardContent className="p-6 pt-0">
+            <div className="flex flex-col space-y-4 border-t pt-6">
+              {nodeType === 'conditional' ? (
+                <ConditionalArgumentInputs
+                  argumentTypes={argumentTypes}
+                  blockSetter={blockSetter}
+                  nodeArguments={nodeArguments}
+                  variables={variables}
+                />
+              ) : null}
+              {nodeType === 'function' ? (
+                <InfiniteArgumentInputs
+                  argumentTypes={argumentTypes}
+                  blockSetter={blockSetter}
+                  nodeArguments={nodeArguments}
+                  variables={variables}
+                />
+              ) : null}
+              {nodeType === 'operator' ? (
+                <OperatorArgumentInputs
+                  argumentTypes={argumentTypes}
+                  blockSetter={blockSetter}
+                  label={label}
+                  nodeArguments={nodeArguments}
+                  variables={variables}
+                />
+              ) : null}
+              {nodeType === 'property' ? (
+                <PropertyArgumentInputs
+                  argumentTypes={argumentTypes}
+                  blockSetter={blockSetter}
+                  nodeArguments={nodeArguments}
+                />
+              ) : null}
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
+
+      <CardFooter className="p-4 pt-0">
         <Tabs
           defaultValue="output"
           className={cn(

@@ -9,6 +9,7 @@ type ArgumentType =
   (typeof blockConfig)[keyof typeof blockConfig]['argumentTypes'][number]
 
 type ArgumentInputProps = {
+  argument?: Block['nodeArguments'][number]
   argumentIndex: number
   argumentTypes: ArgumentType[]
   placeholder: string

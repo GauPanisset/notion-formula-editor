@@ -1,14 +1,23 @@
+import { Block } from '@/entities/block'
+
 import { ArgumentInputProps } from '../../model/types'
 import { ArgumentInput } from '../ArgumentInput'
 
-const PropertyArgumentInputs: React.FunctionComponent<
-  Pick<ArgumentInputProps, 'argumentTypes' | 'blockSetter'>
-> = ({ argumentTypes, blockSetter }) => {
+type Props = Pick<ArgumentInputProps, 'argumentTypes' | 'blockSetter'> & {
+  nodeArguments: Block['nodeArguments']
+}
+
+const PropertyArgumentInputs: React.FunctionComponent<Props> = ({
+  argumentTypes,
+  blockSetter,
+  nodeArguments,
+}) => {
   return (
-    <div className="flex flex-col space-y-4 border-t pt-6">
+    <div className="flex flex-col space-y-4">
       <div>
         <span className="mr-4 text-sm">Property name</span>
         <ArgumentInput
+          argument={nodeArguments[0]}
           argumentTypes={['string']}
           argumentIndex={0}
           placeholder="Property name"
@@ -18,6 +27,7 @@ const PropertyArgumentInputs: React.FunctionComponent<
       <div>
         <span className="mr-4 text-sm">Property value</span>
         <ArgumentInput
+          argument={nodeArguments[1]}
           argumentTypes={argumentTypes}
           argumentIndex={1}
           placeholder="Property value"

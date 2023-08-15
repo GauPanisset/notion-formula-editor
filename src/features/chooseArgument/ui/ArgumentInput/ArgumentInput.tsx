@@ -17,6 +17,7 @@ import { updateBlockArgument } from '../../model/updateBlockArgument'
 import { ArgumentTypeIcon } from '../ArgumentTypeIcon'
 
 const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
+  argument,
   argumentIndex,
   argumentTypes,
   placeholder,
@@ -26,11 +27,12 @@ const ArgumentInput: React.FunctionComponent<ArgumentInputProps> = ({
   const formRef = React.useRef<HTMLFormElement>(null)
 
   const [open, setOpen] = React.useState(false)
-  const [selectedVariableId, setSelectedVariableId] =
-    React.useState<Block['id']>('')
+  const [selectedVariableId, setSelectedVariableId] = React.useState<
+    Block['id']
+  >(argument?.type === 'variable' ? argument.value : '')
   const [directValue, setDirectValue] = React.useState<
     boolean | number | string
-  >('')
+  >(argument?.type === 'constant' ? argument.value : '')
 
   const inputType = argumentTypes.includes('string')
     ? 'string'

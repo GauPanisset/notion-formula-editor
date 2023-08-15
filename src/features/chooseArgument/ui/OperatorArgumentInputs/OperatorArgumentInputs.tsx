@@ -1,15 +1,28 @@
+import { Block } from '@/entities/block'
+
 import { ArgumentInputProps } from '../../model/types'
 import { ArgumentInput } from '../ArgumentInput'
 
-const OperatorArgumentInputs: React.FunctionComponent<
-  Pick<ArgumentInputProps, 'argumentTypes' | 'blockSetter' | 'variables'> & {
-    label: string
-  }
-> = ({ argumentTypes, blockSetter, label, variables }) => {
+type Props = Pick<
+  ArgumentInputProps,
+  'argumentTypes' | 'blockSetter' | 'variables'
+> & {
+  label: string
+  nodeArguments: Block['nodeArguments']
+}
+
+const OperatorArgumentInputs: React.FunctionComponent<Props> = ({
+  argumentTypes,
+  blockSetter,
+  label,
+  nodeArguments,
+  variables,
+}) => {
   return (
-    <div className="flex flex-row items-center justify-center space-x-4 border-t pt-6">
+    <div className="flex flex-row items-center justify-center space-x-4">
       <span className="text-sm ">Does</span>
       <ArgumentInput
+        argument={nodeArguments[0]}
         argumentTypes={argumentTypes}
         argumentIndex={0}
         placeholder="First argument"
@@ -18,6 +31,7 @@ const OperatorArgumentInputs: React.FunctionComponent<
       />
       <span className="text-sm lowercase">{label}</span>
       <ArgumentInput
+        argument={nodeArguments[1]}
         argumentTypes={argumentTypes}
         argumentIndex={1}
         placeholder="Second argument"
