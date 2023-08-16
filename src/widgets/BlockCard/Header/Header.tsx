@@ -1,4 +1,4 @@
-import { CaretSortIcon, QuestionMarkCircledIcon } from '@radix-ui/react-icons'
+import { ChevronDownIcon, QuestionMarkCircledIcon } from '@radix-ui/react-icons'
 
 import { Block, blockConfig } from '@/entities/block'
 import { RemoveBlockButton } from '@/features/removeBlock'
@@ -34,11 +34,17 @@ const Header: React.FunctionComponent<Props> = ({
     <CardHeader className="p-4">
       <CardTitle className="flex flex-row items-center justify-between">
         <div className="flex flex-row items-center">
+          <CollapsibleTrigger asChild className="group">
+            <Button variant="outline" size="icon" className="mr-8">
+              <ChevronDownIcon className="h-4 w-4 transition-transform group-data-[state=closed]:-rotate-90" />
+              <span className="sr-only">Toggle</span>
+            </Button>
+          </CollapsibleTrigger>
           <span className="mr-2">{label}</span>
           <TooltipProvider delayDuration={200}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <QuestionMarkCircledIcon className="mr-4 h-4 w-4 text-muted-foreground" />
+                <QuestionMarkCircledIcon className="mr-8 h-4 w-4 text-muted-foreground" />
               </TooltipTrigger>
               <TooltipContent>
                 <p>{description}</p>
@@ -51,12 +57,6 @@ const Header: React.FunctionComponent<Props> = ({
           />
         </div>
         <div className="flex flex-row items-center space-x-4">
-          <CollapsibleTrigger asChild>
-            <Button variant="outline" size="icon">
-              <CaretSortIcon className="h-4 w-4" />
-              <span className="sr-only">Toggle</span>
-            </Button>
-          </CollapsibleTrigger>
           <RemoveBlockButton blockId={id} blocksSetter={blocksSetter} />
         </div>
       </CardTitle>

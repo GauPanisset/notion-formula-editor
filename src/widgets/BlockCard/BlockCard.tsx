@@ -19,7 +19,6 @@ const BlockCard: React.FunctionComponent<Props> = ({
   type,
   variableName,
 }) => {
-  const [isOpen, setIsOpen] = React.useState(true)
   const { getBlocks, setBlocks: blocksSetter, setBlock } = useBlocksContext()
 
   const blocks = getBlocks()
@@ -32,7 +31,7 @@ const BlockCard: React.FunctionComponent<Props> = ({
   return (
     <Draggable id={id}>
       <Card className="relative w-full shadow-none">
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Collapsible defaultOpen={true}>
           <DragHandle id={id}>
             <Header
               id={id}
