@@ -30,7 +30,7 @@ const BlockCard: React.FunctionComponent<Props> = ({
 
   return (
     <Draggable id={id}>
-      <Card className="relative w-full shadow-none">
+      <Card className="relative w-full bg-background/70 shadow-none backdrop-blur-sm">
         <Collapsible defaultOpen={true}>
           <DragHandle id={id}>
             <Header
